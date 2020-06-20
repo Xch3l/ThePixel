@@ -1,13 +1,17 @@
+#define WINVER 0x0501 // Windows XP
+#define WIN32_LEAN_AND_MEAN
 #define UNICODE
 
+#include <stdlib.h>
+#include <time.h>
 #include <windows.h>
 #include <wingdi.h>
 
 // Constants
 const wchar_t ThePixelClass[] = L"DeadPixelWndClass";
 const wchar_t ThePixelTitle[] = L"ThePixel";
-const wchar_t ThePixelError[] = L"Cannot kill pixel";
-const wchar_t ThePixelFound[] = L"Hi!";
+const wchar_t ThePixelError[] = L"Couldn't kill pixel";
+const wchar_t ThePixelFound[] = L"Hello there!";
 
 // Globals
 COLORREF ThePixelColor;
@@ -26,7 +30,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uID, WPARAM wParam, LPARAM lParam) {
     case WM_RBUTTONDOWN:
     case WM_MBUTTONDOWN:
     case 0x020B: // WM_XBUTTONDOWN
-      MessageBox(hwnd, ThePixelFound, ThePixelTitle, MB_OK);
+      MessageBox(hwnd, ThePixelFound, ThePixelTitle, MB_SETFOREGROUND | MB_OK);
 
     case WM_DESTROY:
       PostQuitMessage(0);
@@ -49,15 +53,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uID, WPARAM wParam, LPARAM lParam) {
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hUnused, PSTR CmdLine, int iCmdShow) {
   // Register window class
-  WNDCLASS w = {};
+  WNDCLASSEX w = {};
+  w.cbSize = sizeof(WNDCLASSEX);
   w.lpszClassName = ThePixelClass;
   w.lpfnWndProc = WndProc;
   w.hInstance = hInstance;
   w.hCursor = LoadCursor(NULL, IDC_ARROW);
-  RegisterClass(&w);
-
-  // Seed the RNG with current time
-  srand((unsigned) time(NULL));
+  w.hbrBackground = (HBRUSH) (COLOR_WINDOW + 1);
+  RegisterClassEx(&w);
 
   // Initialize "dead pixel" position and color
   RECT workArea = {};
@@ -80,19 +83,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hUnused, PSTR CmdLine, int iCm
 
   // Create window
   HWND hwnd = CreateWindowEx(
-    0x08000008L,   // ExStyles (WS_EX_TOPMOST | WS_EX_NOACTIVATE)
-    ThePixelClass, // Class name
-    ThePixelTitle, // Title
-    0x90000000L,   // Style (WS_VISIBLE | WS_POPUP)
-    wx,wy, sz,sz,  // Position and size
-    NULL, NULL,    // Parent window and Menu bar
-    hInstance,     // Instance handle
-    NULL           // Extra data
+    WS_EX_TOPMOST | WS_EX_NOACTIVATE,  // ExStyle
+    ThePixelClass,                     // Class name
+    ThePixelTitle,                     // Title
+    WS_VISIBLE | WS_POPUP,             // Style
+    wx, wy, sz, sz,                    // Position and size
+    NULL, NULL,                        // Parent window and Menu bar
+    hInstance,                         // Instance handle
+    NULL                               // Extra data
   );
 
   if(hwnd == NULL) {
-    MessageBox(NULL, ThePixelError, ThePixelTitle, MB_OK);
-    return 1;
+    MessageBox(NULL, ThePixelError, ThePixelTitle, MB_SETFOREGROUND | MB_OK);
+    return 0;
   }
 
   ShowWindow(hwnd, SW_SHOWNA);
@@ -106,4 +109,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hUnused, PSTR CmdLine, int iCm
 
   // Done
   return m.wParam;
+}
+
+///////////////////////////////////////////////////////////////////////
+
+int WinMainCRTStartup(int argc, wchar_t *argv[]) {
+  HMODULE hwnd;
+  int result;
+
+  // Seed the RNG with the current time
+  srand((unsigned) time(NULL));
+
+  // Get the file handle and start the program
+  GetModuleHandleEx(0, NULL, &hwnd);
+  result = WinMain(hwnd, NULL, NULL, SW_SHOWNORMAL);
+
+  ExitThread(result);
+  return 0;
 }

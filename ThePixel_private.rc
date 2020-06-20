@@ -19,7 +19,7 @@ FILETYPE VFT_APP
 		 BLOCK "040904E4"
 		 {
 			 VALUE "CompanyName", "Xch3l"
-			 VALUE "FileVersion", ""
+			 VALUE "FileVersion", "200620"
 			 VALUE "FileDescription", "ThePixel"
 			 VALUE "InternalName", ""
 			 VALUE "LegalCopyright", ""

@@ -11,7 +11,7 @@
 #define VER_RELEASE	0
 #define VER_BUILD	1
 #define COMPANY_NAME	"Xch3l"
-#define FILE_VERSION	""
+#define FILE_VERSION	"200620"
 #define FILE_DESCRIPTION	"ThePixel"
 #define INTERNAL_NAME	""
 #define LEGAL_COPYRIGHT	""
